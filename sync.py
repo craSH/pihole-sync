@@ -6,7 +6,7 @@ import sys
 from enum import IntEnum
 from http.client import HTTPResponse
 from urllib.parse import urlencode, urlunparse, ParseResult
-from urllib.request import urlopen
+import urllib.request
 
 class ListType(IntEnum):
     WHITELIST = 1
@@ -32,8 +32,13 @@ class Host:
         params. If auth is True, the call is authenticated with the host's
         webpassword.
         """
+
+
+        post_params = {}
+
         if auth:
-            query_params['auth'] = self.webpassword
+            post_params = {'pw' : self.webpassword}
+
         components = ParseResult(
             scheme = 'http',
             netloc = self.address,
@@ -43,7 +48,10 @@ class Host:
             fragment = ''
         )
         url = urlunparse(components)
-        return urlopen(url)
+        data = urllib.parse.urlencode(post_params).encode("utf-8")
+        req = urllib.request.Request(url, data)
+
+        return urllib.request.urlopen(req)
 
     def get_list(self, list_type):
         """
